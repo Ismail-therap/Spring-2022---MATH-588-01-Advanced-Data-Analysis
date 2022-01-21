@@ -6,14 +6,16 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
 ```
 
 \newpage
 
 ## 1(a)
 
-
+\textbf{Null Hypothesis:} Mean weights are same in group 0 and 1. \newline
+\textbf{Alternative Hypothesis:} Mean weights are not same in group 0 and 1.
+\
 ```{r}
 library(readr)
 fullBumpus <- read_table2("E:/NMT MS/Spring 22/MATH 588/Home_Work/Spring-2022---MATH-588-01-Advanced-Data-Analysis/HW1/HW1 files/fullBumpus.txt")
@@ -24,19 +26,30 @@ ttst1
 ```
 
 
+\textbf{Comments:} According to the p-value [considering variance are same in both group] ($0.0101$) it can be said that there is statistically significant difference between two group (0 and 1) in terms of weights, at level of significance is $0.05$. 
+
+
+\
 
 ```{r}
 ttst2 = t.test(Weight~Survive,var.equal=FALSE,data = fullBumpus)
 ttst2
 ```
 
+\textbf{Comments:} According to the p-value [considering variance are not equal in both group] ($0.01141$) it can be said that there is statistically significant difference between two group (0 and 1) in terms of weights, at level of significance is $0.05$. 
+
+\
+So, in both case (variance same or different), the null hypothesis is rejected.
+
+\pagebreak
+
 ## 1(b)
 
-You can also embed plots, for example:
+After observing the normal qqplot of the residual we can interpret that the data does not follow normal distribution. Because the lower tail and upper part in the plot not goes close to the straight line. We should take some sort of transformation before carry out the t-test. The data distribution seems right skewed, so log-transformation could leads the data to normal shape and we know normality is the key assumption for t-test.
+\
 
-```{r }
+```{r,results='hide',fig.show='hide'}
 res = resid(lm(Weight~Survive, data = fullBumpus))
-
 qqnorm(res)
 qqline(res)
 ```
@@ -45,8 +58,13 @@ qqline(res)
 
 ```{r}
 boxplot(Weight~Survive,data=fullBumpus)
+
+# Showing IQR
+aggregate(Weight~Survive,fullBumpus,IQR)
 ```
 
+As we know if the IQRs is between 0.5 and 2.0, there is no cause for concern about unequal variances. But in our case we observed that the IQR is greater than 2 for the surviving sparrow (1). So, the variability seems different between this two groups for the weight.
+\
 ## 1(d)
 
 ```{r}
