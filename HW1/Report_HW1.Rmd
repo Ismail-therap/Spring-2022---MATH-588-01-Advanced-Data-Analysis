@@ -1,0 +1,60 @@
+---
+title: "Home Work 1-MATH 588"
+author: "Md Ismail Hossain"
+date: "1/27/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\newpage
+
+## 1(a)
+
+
+```{r}
+library(readr)
+fullBumpus <- read_table2("E:/NMT MS/Spring 22/MATH 588/Home_Work/Spring-2022---MATH-588-01-Advanced-Data-Analysis/HW1/HW1 files/fullBumpus.txt")
+
+
+ttst1 = t.test(Weight~Survive,var.equal=TRUE,data = fullBumpus)
+ttst1
+```
+
+
+
+```{r}
+ttst2 = t.test(Weight~Survive,var.equal=FALSE,data = fullBumpus)
+ttst2
+```
+
+## 1(b)
+
+You can also embed plots, for example:
+
+```{r }
+res = resid(lm(Weight~Survive, data = fullBumpus))
+
+qqnorm(res)
+qqline(res)
+```
+
+## 1(c)
+
+```{r}
+boxplot(Weight~Survive,data=fullBumpus)
+```
+
+## 1(d)
+
+```{r}
+
+
+HW1FakeCor <- read_table2("E:/NMT MS/Spring 22/MATH 588/Home_Work/Spring-2022---MATH-588-01-Advanced-Data-Analysis/HW1/HW1 files/HW1FakeCor.txt")
+par(mfrow=c(2,1))
+boxplot(WeightA~Nest,data=HW1FakeCor)
+boxplot(WeightB~Nest,data=HW1FakeCor)
+```
+
