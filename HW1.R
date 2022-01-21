@@ -25,5 +25,14 @@ shapiro.test(res)
 
 ## 1 (c)
 
+boxplot(Weight~Survive,data=fullBumpus)
 
 
+## 1 (d)
+
+HW1FakeCor <- read_table2("HW1 files/HW1FakeCor.txt")
+
+
+par(mfrow=c(2,1))
+boxplot(WeightA~Nest,data=HW1FakeCor)
+boxplot(WeightB~Nest,data=HW1FakeCor)
