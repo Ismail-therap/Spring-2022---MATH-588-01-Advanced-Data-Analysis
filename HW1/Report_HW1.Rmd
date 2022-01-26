@@ -1,5 +1,6 @@
 ---
-title: "Home Work 1-MATH 588"
+title: "MATH 588"
+subtitle: "HW1"
 author: "Md Ismail Hossain"
 date: "1/27/2022"
 output: pdf_document
@@ -98,8 +99,11 @@ summary(mdl)
 
 ```{r}
 b0M = coef(mdl)[1]
+b0M
 b0F = coef(mdl)[1] + coef(mdl)[2]
+b0F
 b1 = coef(mdl)[3]
+b1
 
 ```
 
@@ -166,11 +170,110 @@ confint(mdlI)
 The 95% CI for the difference of slopes (female-male)=[$-0.4166585$ ,$1.527374$] because interaction term representing difference between male and feamale.
 
 
-# 3(a)
+# 3(a) (1)
 
 ```{r}
 #install.packages("Sleuth3")
 library(Sleuth3)
-head(ex0327)
+boxplot(PollenRemoved~BeeType,data=ex0327)
 ```
 
+
+# 3(a) (2)
+
+```{r}
+ex0327$tPollenRemoved <- log(ex0327$PollenRemoved/(1-ex0327$PollenRemoved))
+boxplot(tPollenRemoved~BeeType,data=ex0327)
+```
+
+
+# 3(a) (3)
+
+```{r}
+t.test(tPollenRemoved~BeeType,var.equal=TRUE,data = ex0327)
+```
+
+
+The calculated p-value is less than 0.05. So, at 5\% level of significance we can conclude that there is significant difference between Bee types in terms of Pollen removal proportion. 
+
+
+# 3 (b) (1)
+
+```{r}
+boxplot(DurationOfVisit~BeeType,data=ex0327)
+
+```
+
+From the side by side box plot of original Duration variable we observed that there is outlier present
+for Queen bees. 
+
+\newpage
+
+# 3 (b) (2)
+
+```{r}
+
+boxplot(log(DurationOfVisit)~BeeType,data=ex0327)
+
+```
+Again we observed outliers for queen bees for log transformed duration but the distribution looks symmetric for this transformation.  
+
+
+\newpage
+# 3 (b) (3)
+
+```{r}
+
+boxplot(1/DurationOfVisit~BeeType,data=ex0327)
+
+```
+
+Outlier present for both type of bee types when we consider reciprocal of the variable. 
+
+# 3 (b) (4)
+
+Among these three transformation, log transformation looks appropriate for t-tools or performing t-test because median are nearer to the center than other transformation. 
+
+# 3 (b) (5)
+
+```{r}
+t.test(log(DurationOfVisit)~BeeType,var.equal=TRUE,data = ex0327)
+```
+
+The 95\% confidence interval is $(-1.118,-0.184)$.
+
+
+# 3 (b) (6)
+
+What are relative advantages of the three scales as far as interpretation goes? 
+
+In applying different parametric statistical tests like t-test, we need the normality assumption to fulfill. Different scales helps to check whether the transformed data presenting the required shape or distribution to carry out the tests as far as interpretation goes. 
+
+
+# 3 (b) (7)
+
+Based on your experience with this problem, comment on the difficulty in assessing equality of population standard deviations from small samples.
+
+```{r}
+aggregate(PollenRemoved ~ BeeType, data = ex0327, length)
+```
+
+```{r}
+aggregate(PollenRemoved ~ BeeType, data = ex0327, sd)
+```
+
+```{r}
+aggregate(tPollenRemoved ~ BeeType, data = ex0327, sd)
+```
+
+
+
+```{r}
+aggregate(DurationOfVisit ~ BeeType, data = ex0327, sd)
+```
+
+```{r}
+aggregate(log(DurationOfVisit)~ BeeType, data = ex0327, sd)
+```
+
+From the analysis I observed that the population standard deviation is fluctuating too much as we are changing the scale of measurement in this data set. The reason might be the small sample in groups. 
