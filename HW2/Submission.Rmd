@@ -1,0 +1,162 @@
+---
+title: "MATH 588"
+subtitle: "HW2"
+author: "Md Ismail Hossain"
+date: "2/08/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+```
+
+\newpage
+
+
+# Question 1 
+
+## a and b
+
+```{r }
+library(Sleuth3)
+head(case0202)
+case0202$Difference <- case0202$Unaffected-case0202$Affected
+
+#a)
+#par(mfrow=c(2,1))
+hist(case0202$Difference,main="Histogram of Difference between affected and unaffected",
+     xlab="Difference",breaks = 10)
+box()
+
+#b)
+case0202$log_unaff <- log(case0202$Unaffected)
+case0202$log_aff <- log(case0202$Affected)
+case0202$diff_log <- case0202$log_unaff - case0202$log_aff
+
+hist(case0202$diff_log,main="Histogram of log transformed Difference between affected and unaffected",
+     xlab="Log Difference",breaks = 10)
+box()
+```
+
+The distribution of differences of log volumes looks more symmetric than the original scale.
+
+## c:
+```{r}
+#c) Paired t-test
+
+# original data
+t.test(case0202$Unaffected,case0202$Affected,pair=TRUE)
+
+# log transformed data
+t.test(case0202$log_unaff,case0202$log_aff,pair=TRUE)
+```
+
+We have found that the difference between affected and unaffected groups are statistically significant at 5\% level of significance for both transformed and non transformed data sets. But because of normality assumption we should consider the log transformed data in testing the hypothesis.
+
+
+## d:
+```{r}
+# d) 95% CI
+
+# log-transformed 95% confidence interval of the log difference values.
+t.test(case0202$diff_log)$conf.int
+
+# 95% CI in original scale (differences)
+exp(t.test(case0202$diff_log)$conf.int)
+```
+
+
+# Question 2 
+
+# a and b
+
+```{r}
+# Q2
+
+set.seed(123)
+
+output_2_a <- vector()
+for (i in 1:1000) {
+  x=rep(c(0,9), each=15)
+  y = 120 + 0.5*x + rnorm(30,0,8)
+  p_value = coef(summary(lm(y~x)))[2,"Pr(>|t|)"]
+  output_2_a[i] = p_value<=0.05
+  
+}
+cat("(a) Power for half the plants at each of two fertilizer levels of 0 and 9 is ",mean(output_2_a),"\n")
+
+
+
+output_2_b <- vector()
+for (i in 1:1000) {
+  x=rep(0:9, each=3)
+  y = 120 + 0.5*x + rnorm(30,0,8)
+  p_value = coef(summary(lm(y~x)))[2,"Pr(>|t|)"]
+  output_2_b[i] = p_value<=0.05
+  
+}
+cat("(b) Power for 3 plants each at fertilizer levels 0 through 9 at each whole number is",mean(output_2_b),"\n")
+
+```
+
+What advantage is there to using all ten levels of fertilizer? 
+
+Although the power of the study reduced when we are using ten levels of the fertilizers, there is a advantage in the analysis of using too many levels. By using only two fertilizer levels we could not
+understand the residual vs fit plot, because using only two level gives us a linear line. On the other hand if there is any non linear relationship then we could understand using the residual vs fit plot for all ten levels of fertilizer. 
+
+# Question 3:
+
+\textbf{Null Hypothesis:} Strength in left and right arm is similar for ambidextrous. \newline
+\textbf{Alternative Hypothesis:} Strength are not equal in left and right arm for ambidextrous .
+
+Let's find the probability of getting a strong on right hand person out of 52 individual and it's
+$20/52=0.38$ approximately. 
+
+Now if we consider the normal approximation of the binomial then we need to consider two different types and for our case it's strong right hand person and strong left hand person. So, total number of 
+person here is $n = 47$ and if we consider that selection of right hand person is a success then the probability could be considered as $p = 0.38$. 
+
+So, the $mean = np = 47(0.38) = 17.86$ and $variance = npq = 47(.38)(0.62) = 11.07$. The calculated z-statistic could be $Z = (20-17.86)/sqrt(11.07) = 0.643$ 
+
+```{r}
+2*pnorm(q=0.643, lower.tail=F)
+```
+
+At 5\% level of significance we could not reject the null hypothesis. So, we do not have enough data
+to show that there is not statistically significant difference of strength between left and right arm of the ambidextrous persons or strength is equal in both hand. 
+
+
+# Question 4
+
+## a
+```{r}
+with(ex0428, hist(Cross-Self, breaks=10))
+box()
+```
+
+
+
+## b
+```{r}
+with(ex0428, t.test(Cross,Self,paired=T))
+
+```
+
+The p-value $0.04976$, looks smaller than 5\% level of significance. So, there should be statistically significant difference between Cross and Self group.
+
+## c
+
+95\% confidence interval is = $[0.003, 5.230]$
+
+## d
+
+The histogram of the difference between Cross and self does not looks normally distributed. So, before
+applying t-test need to transform the data or should apply nonparametric test. 
+
+## e
+
+```{r}
+with(ex0428, wilcox.test(Cross,Self,paired=T))
+```
+
+
+The p-value is $0.041$, which is less than 0.05. So, at 5\% level of significance we can conclude that there is significant difference between Cross fertilized plants and Self fertilized plants  in-terms of their heights.
