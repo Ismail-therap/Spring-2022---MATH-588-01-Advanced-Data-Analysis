@@ -66,4 +66,210 @@ plot(m0, which=c(1,1))
 plot(m1, which=c(1,1))
 ```
 
+From this residual vs fitted plot we observed a non linear relationship and observation 34 seems like close look. From this plot we can not conclude that constant variance assumption violated both case. 
+## f
 
+From the regression summary table presented in part (d), we found that the p-value for the interaction term does not seems statistically significant at 5\% level of significance. So, we can say there is not any joint effect of the variable logTime and TreatNS.
+## g
+
+```{r}
+summary(influence.measures(m1))
+
+apply(confint(m1),1,diff)
+apply(confint(update(m1,subset=-34)),1,diff)
+```
+
+From this summary we found that observation 34 is influential according to DFFITS and cov.r. So, we tried to observed the effect of observation 34 after removing it from the data and displying the confidence interval difference between the models. 
+## h
+
+```{r}
+m2 = update(m1, subset=rownames(bb)!=34)
+summary(m2)
+```
+
+We do not observe any drastic change in the summary after removing the 34th observation from the data set. The R squared value little increased and the Standard error of the coefficients become smaller for the adjusted data set.
+## i
+
+```{r}
+library(car)
+influencePlot(m1)
+```
+
+From this plot we observed that observation 31st and 34th have significant effect on the estimated coefficient of the model. 
+
+## j
+This would indicate that dropping subject 34 is lowering the estimate
+of the logTime slope coefficient and this indicate higher effect on estimate.
+
+
+# Question 2
+
+## a
+
+```{r}
+bost = read.csv("bost.csv")
+head(bost)
+sapply(bost,function(x)mean(is.na(x)))
+```
+
+We found around $13\%$ missing values for the column "rm" and "lstat". Other two cloumns don't have any missing observations. 
+
+## b
+```{r}
+pairs(bost)
+```
+From this correlation plots, we can comment that that room is positively correlated with the variable "medv" and negatively with "lstat". We can not make a clear statment about the relation between room and tax but looks like a down tren in the observation. Also lstat and medv seems like a nonlinear down trend between them and no clear pattern found between medv and tax. 
+
+## c
+
+```{r,echo=FALSE}
+# A residual plotting function
+# Input: An lm object (result of calling lm())
+#        The quoted name of an x (predictor) variable from the fitted model;
+#          interactions are allowed using ":".  If NULL, a (studentized)
+#          residual vs. fit plot is produced, otherwise a residual vs.
+#          "x" plot is produced.
+#        A quoted filename for a pdf copy of the plot (.pdf will be added)
+#        If main is NULL, the plot title will be the name of the lm object,
+#           otherwise the supplied text is the title.
+#        If identify=TRUE or a vector of case labels, identify
+#           will be used to label outliers interactively.
+# Output: NULL or a vector of identified points
+# Side effects: A residual vs fit or residual vs. x plot is produced.
+#               If fname is specified, the plot is copied to a file.
+#
+rp = function(mdl, xname=NULL, fname=NULL, main=NULL, identify=NULL) {
+  if (!is(mdl, "lm")) stop("mdl must be an lm object")
+  if (!is.null(xname)) {
+    if (!is.character(xname) || length(xname)!=1)
+      stop("xname must be a single quoted string")
+    xname = strsplit(xname, ":")[[1]]
+    if (any(is.na(match(xname, colnames(mdl$model)))))
+      stop(xname, "is not a variable in ", mdl)
+  }
+  if (is.null(main)) main = deparse(substitute(mdl))
+  if (!is.character(main) || length(main)>1)
+    stop("main must be NULL or a single quoted string")
+  if (is.logical(identify)) {
+    if (identify[1]==FALSE) {
+      identify = NULL
+    } else {
+      identify = rownames(mdl$model)
+    }
+  }
+  if (!is.null(identify) && length(identify)!=nrow(mdl$model))
+    stop("identify must have a length matching the data")
+
+  # Turn off the click bell (but restore when done)
+  oldBell = options("locatorBell")
+  options(locatorBell=FALSE)
+  on.exit(options(locatorBell=oldBell))
+  res = rstudent(mdl)
+  if (is.null(xname)) {
+    x = fitted(mdl)
+    xname = "Fitted values"
+  } else {
+    x = mdl$model[,xname]
+    if (!is.null(ncol(x))) {
+      if (!all(sapply(x,is.numeric))) {
+        for (i in 1:ncol(x))
+          if (!is.numeric(x[,i])) x[,i]=as.numeric(x[,i])
+      }
+      x = apply(x, 1, prod)
+    }
+  }
+  plot(x, res, xlab=paste(xname,collapse=":"), ylab="Studentized Residuals",
+       main = main)
+  abline(h=0)
+
+  rtn = NULL
+  if (!is.null(identify))
+    rtn = identify(x, res, identify)
+  
+  if (!is.null(fname)) {
+    len = nchar(fname)
+    if (len>4 && substring(fname,1,len-4)!=".pdf")
+      fname = paste(fname,".pdf",sep="")
+    dev.copy(pdf, fname)
+    dev.off()
+  }
+  return(rtn)
+}
+```
+
+```{r}
+b0 = lm(medv ~ rm + tax + lstat, bost)
+par(mfrow=c(1,3))
+rp(b0,identify=TRUE)
+rp(b0,"rm",identify=TRUE)
+rp(b0,"lstat",identify=TRUE)
+```
+
+```{r}
+b1 = lm(medv ~ rm + I(rm^2) + tax + log(lstat), bost)
+par(mfrow=c(1,3))
+rp(b1,identify=TRUE)
+rp(b1,"rm",identify=TRUE)
+rp(b1,"log(lstat)",identify=TRUE)
+```
+
+For some reason the outliers I could not present using the rm function in the plot. Instead of that I am using fitted vs residual plot to indicate the outliers here. 
+
+```{r}
+plot(b0, which=c(1,1))
+plot(b1, which=c(1,1))
+```
+
+The plot of the model after taking log transformation, shows that the row names of the worst outliers are 182, 506 and 365.
+
+## d
+
+```{r}
+i1=influence.measures(b1) 
+# Count how many observations are ‘‘flagged’’ for a
+ # particular influence measure: 
+sum(i1$is.inf[,"cook.d"]) 
+# Show all influence measures for those observations
+ # that were ‘‘flagged’’ for a particular influence measure:
+ i1$infmat[i1$is.inf[,"cook.d"],]
+ # Show all data for those observations that were ‘‘flagged’’
+ # for a particular influence measure: 
+#bost[i1$is.inf[,"cook.d"],]
+
+which(i1$is.inf[,"cook.d"])
+```
+
+According to Cook's distance we found two suspected observation. But using the previous knowledge and this finding we could tell observation 365 should be investigated. 
+## e
+
+```{r}
+#install.packages("mice")
+library(mice)
+bost.mice = mice(bost,10)
+
+i=2
+influencePlot(lm(medv ~ rm + I(rm^2) + tax + log(lstat),
+data = complete(bost.mice, i)))
+```
+
+Most of the data have a similar influence except the suspected observations like observation 365 according to the Cook's distance or any other measure. 
+
+## f
+
+```{r}
+bost.lms = with(bost.mice, lm(medv ~ rm + I(rm^2) + tax + log(lstat)))
+summary(pool(bost.lms))
+```
+
+From the model summary we found all of the regressors are highly significant. rm, tax and log(lstat) have a negative coefficient value. We did not consider any interaction between variables here. 
+
+## g
+
+```{r}
+bostX=bost[-365,]
+bostX.mice= mice(bostX,10)
+bostX.lms = with(bostX.mice, lm(medv ~ rm + I(rm^2) + tax + log(lstat)))
+summary(pool(bostX.lms))
+```
+
+After removing obervation 365 and imputation we have found little change in the beta coefficient estimate for the intercept and rm and also their standard error. 
