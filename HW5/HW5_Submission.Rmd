@@ -1,0 +1,184 @@
+---
+title: "MATH 588"
+subtitle: "HW5"
+author: "Md Ismail Hossain"
+date: "3/06/2022"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+```
+
+\newpage
+
+# Question 1
+
+## a
+
+```{r}
+library(Sleuth3)
+pyg = case1302
+# Number of rows and columns
+dim(pyg)
+
+# Head of the data
+head(pyg)
+
+names(pyg) <- tolower(names(pyg))
+summary(aov(score~company*treat,pyg))
+```
+
+## b
+
+```{r}
+summary(aov(score~company,pyg))
+```
+
+## c
+
+```{r}
+summary(aov(score~company+treat,pyg))
+```
+
+$\mu_0:$ There is no treatment effect.\
+$\mu_1:$ Treatment effect is significant.
+
+At $5\%$ level of significance we can reject the null hypothesis because the calculated p-value is $0.0119$. So, treatment effect is statistically significant.
+
+## d
+$MS_R = 43.3$ is the best estimate of the residual. 
+
+
+## e
+
+
+
+```{r}
+summary(aov(score~treat+company,pyg))
+```
+
+So, the p-value for treatment is $0.0131$ if we put treatment before company.
+
+## f
+
+```{r}
+part_c_model = lm(score~company+treat,pyg)
+
+plot(part_c_model, which=c(1,1))
+```
+The residual Vs fitted plot seems good because we are not observing any unusual pattern in the upper part and lower part of the zero line. 
+
+## g
+
+```{r}
+source("http://www.stat.cmu.edu/~hseltman/files/qqn.R")
+qqn(residuals(part_c_model))
+
+```
+Other than very few observation in lower and upper tail the plot looks fine.
+
+## h
+
+```{r}
+summary(aov(score~company+treat,pyg))
+
+```
+
+```{r}
+summary(aov(score~treat,pyg))
+```
+
+When we are using the company+treatment model then the degree of freedom for residual become lesser than the model where we are only use treatment. As a result when we are dividing the residual sum of square value using it's degree of freedom then the calculated sum of square become lower for company+treatment model. Finally when we try to find the F-statistic, by dividing all the mean square using residual sum of square it finding a higher F-statistics value for treatment in treatment+company model. So we are getting a smaller p-value for the treatment+company model. This smaller p-value increasing the power because residual mean square is nothing but the $\sigma^2$ which we want as smaller as possible. So, smaller p-value indicating a more power of the analysis.
+
+# Question 2
+
+
+```{r}
+stp <- read.delim("E:/NMT MS/Spring 22/MATH 588/Home_Work/Spring-2022---MATH-588-01-Advanced-Data-Analysis/HW5/stepping.dat.txt")
+
+
+dim(stp) # 30 6
+sapply(stp, class)
+# Order Block Height Frequency RestHR HR
+# "integer" "integer" "integer" "integer" "integer" "integer"
+stp$Block = factor(stp$Block)
+stp$Height = factor(stp$Height, labels=c("Low","High"))
+stp$Frequency = factor(stp$Frequency, labels=c("Low","Med","High"))
+summary(stp)
+```
+
+## a
+
+```{r}
+with(stp, table(Height, Frequency, Block))
+```
+In each block we observed 1 observation per cell and the missing observation is located in different position. 
+
+## b
+
+```{r}
+with(stp, table(Height, Frequency))
+```
+
+Looks like it's a "Balanced" design.
+
+## c
+
+```{r}
+summary(aov(HR~Block+Frequency+Height,stp))
+
+summary(aov(HR~Frequency+Block+Height,stp))
+
+summary(aov(HR~Block+Height+Frequency,stp))
+```
+Among these 3 combination we observed that the Height and Residuals are unchanged. The Block and Frequency sum of square changed when we are changing the position.
+
+## d
+
+$df_B$ $=$ $df_{Block}$ + $df_H$ + $df_F$ $=$ $5 + 1 + 2$ $=$ $8$ \
+$SS_B$ $=$ $SS_{Block}$ + $SS_H$ + $SS_F$ $=$ $4511 + 3406 + 3035$ $=$ $10952$ \
+$MS_B$ $=$ $SS_B/df_B$ $=$ $10952/8$ $=$ $1369$ \
+$df_T$ $=$ $df_B$ + $df_W$ $=$ $8+21$ $=$ $29$ \
+$SS_T$ $=$ $SS_B$ + $SS_W$ $=$ $10952 + 1169.2$ $=$ $12121.2$  \
+
+
+
+## e
+
+```{r}
+summary(aov(HR~Block+Frequency*Height,stp))
+```
+
+
+## f
+
+```{r}
+mi=aov(HR~Block+Frequency+Height+Frequency:Height, stp)
+coefficients(mi)
+sqrt(vcov(mi)["FrequencyHigh:HeightHigh", "FrequencyHigh:HeightHigh"])
+summary.lm(mi)
+qt(0.975, 19)
+```
+
+
+## g
+
+```{r}
+summary(aov(HR~Block+Frequency+Height,stp))
+```
+
+
+## h
+
+```{r}
+#install.packages("gmodels")
+library(gmodels)
+levels(stp$Frequency)
+s0 = aov(HR~Block+Frequency+Height,stp)
+contr = rbind(HvsML = c(-1/2, -1/2, 1), MvsL = c(-1, 1, 0))
+round( fit.contrast(s0, "Frequency", contr, conf.int=0.95), 3)
+```
+
+

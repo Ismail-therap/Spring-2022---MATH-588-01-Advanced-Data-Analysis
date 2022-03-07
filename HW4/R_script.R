@@ -23,3 +23,8 @@ with(bb, plot(logBLratio ~ logTime, pch=as.numeric(bb$treat), xlab="Log Time"))
 with(bb, table(bb$treat,as.numeric(bb$treat)))
 legend("topleft", legend=c("Barrier Disruption","Saline Control"), pch=1:2)
 
+
+m0 = lm(logBLratio ~ logTime + treatment, bb)
+summary(m0)
+plot(m0)
+plot(m0, which=c(1,1))
