@@ -32,6 +32,10 @@ summary(aov(score~company*treat,pyg))
 
 ## b
 
+$H_0:\mu_{B1} = ... =\mu_{B10}$ 
+
+The p-value is greater than 0.05. So, null hypothesis cannot be rejected.
+
 ```{r}
 summary(aov(score~company,pyg))
 ```
@@ -42,8 +46,8 @@ summary(aov(score~company,pyg))
 summary(aov(score~company+treat,pyg))
 ```
 
-$\mu_0:$ There is no treatment effect.\
-$\mu_1:$ Treatment effect is significant.
+$H_0:$ There is no treatment effect.\
+$H_1:$ Treatment effect is significant.
 
 At $5\%$ level of significance we can reject the null hypothesis because the calculated p-value is $0.0119$. So, treatment effect is statistically significant.
 
@@ -151,6 +155,10 @@ $SS_T$ $=$ $SS_B$ + $SS_W$ $=$ $10952 + 1169.2$ $=$ $12121.2$  \
 summary(aov(HR~Block+Frequency*Height,stp))
 ```
 
+$H_0:$ There is no interaction effect.\
+$H_1:$ Interaction effect is statistically significant.
+
+At $5\%$ level of significance we cannot reject the null hypothesis and  conclude that there is no interaction effect. 
 
 ## f
 
@@ -160,15 +168,24 @@ coefficients(mi)
 sqrt(vcov(mi)["FrequencyHigh:HeightHigh", "FrequencyHigh:HeightHigh"])
 summary.lm(mi)
 qt(0.975, 19)
+
+high = 9.75 + 2.09*(6.163)
+low = 9.75 - 2.09*(6.163)
+paste("95% CI is:", low, "to",high)
 ```
 
+We are $95\%$ confident that the difference in the rise of heart rate from low
+to high steps is between 3 beats per minute smaller and 23 bpm larger when
+comparing high frequency to low frequency.
+
+If the subject matter expert conclude that 23 is not that high then we would go with the model without intercation and if they suggest otherwise then we should consider more sample. 
 
 ## g
 
 ```{r}
 summary(aov(HR~Block+Frequency+Height,stp))
 ```
-
+The frequency and Heights seems statistically significant at $5%$ level of significance because p-value lower than 0.05.
 
 ## h
 
@@ -180,5 +197,48 @@ s0 = aov(HR~Block+Frequency+Height,stp)
 contr = rbind(HvsML = c(-1/2, -1/2, 1), MvsL = c(-1, 1, 0))
 round( fit.contrast(s0, "Frequency", contr, conf.int=0.95), 3)
 ```
+## i 
+
+c(1, -1) is the only possible contrast with 1 df which test
+$\mu_{H1} = \mu_{H2}$, and that is the same null hypothesis as the 1 df F test shown in
+the Height line of the ANOVA table.
 
 
+# Question 3
+
+## a
+
+```{r}
+#install.packages("GGally")
+library(GGally)
+# Check correlations (as scatterplots), distribution and print corrleation coefficient 
+ggpairs(ex0914, title="correlogram with ggpairs()") 
+
+```
+
+
+## b
+
+```{r}
+fit <- lm(Heart~Bank+Walk+Talk,data=ex0914)
+```
+
+The fitted model is: $Heart = 3.1787 + 0.4052*Bank + 0.4516*Walk - 0.1796*Talk$
+
+## c
+
+```{r}
+{plot(resid(fit)~predict(fit),xlab="Fitted values",ylab="Residuals",main="Residual plot")
+abline(0,0, col = "red")}
+```
+
+The residual seems randomly allocated. We can not see any unusual pattern or outlier observation. 
+
+## d 
+
+The summary of the regression model presented below:
+```{r}
+summary(fit)
+```
+
+From this summary table we observed that the calculated R squared value is $0.2236$ which doesn't seems very high. Talk is not statistically significant at $5\%$  level of significance in predicting the Heart disease. So, more independent variable needed to be introduced to increase the model predictability. 
