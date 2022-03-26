@@ -1,0 +1,154 @@
+---
+title: "MATH 588"
+subtitle: "HW6"
+author: "Md Ismail Hossain"
+date: "3/26/2022"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+```
+
+\newpage
+
+# Question 1 
+
+## a
+
+```{r}
+library(Sleuth3)
+mem = case1601
+
+
+
+names(mem) = casefold(names(mem))
+# Group means and SEs as 2 by 5 matrices
+means = as.matrix(aggregate(mem[,3:7], list(mem$treatment), mean)[,-1])
+sds = as.matrix(aggregate(mem[,3:7], list(mem$treatment), sd)[,-1])
+ns = as.matrix(aggregate(mem[,3:7], list(mem$treatment), length)[,-1])
+SEs = sds/sqrt(ns-1)
+multiplier = matrix(qt(0.975, ns-1), ncol=5, nrow=2)
+upper = means + multiplier*SEs
+lower = means - multiplier*SEs
+# Start with an empty plot that will hold everything
+lim = c(min(lower), max(upper))
+
+{plot(c(2,16), lim, type="n", xlab="Training Week Prior to Treatment",
+ylab="Percentage Correct",
+main="Monkey Memory Study")
+# Means and CIs by treatment
+x = c(2,4,8,12,16)
+delta = 0.1
+epsilon = 0.075
+for (i in 1:2) {
+  xa = x+c(-1,1)[i]*delta
+  lines(xa, means[i,], col=i, lty=i, pch=i, type="b")
+  segments(xa, lower[i,], xa, upper[i,], col=i)
+  segments(rep(xa-epsilon,2), c(lower[i,],upper[i,]),
+  rep(xa+epsilon,2), c(lower[i,],upper[i,]), col=i)
+}
+# Legend
+legend(9, 90, c("Treated","Untreated"), lty=2:1, col=2:1, pch=2:1)
+# Optional "CI" box:
+text(c(14,14), c(52.5,51), c("95%","C.I."), adj=0)
+segments(c(15.25,15.4,15.25), c(50.5,50.5,52.5), c(15.55,15.4,15.55), c(50.5,52.5,52.5))
+points(15.4,51.5)
+rect(13.8, 49.5, 15.8, 53.6)}
+
+```
+
+
+
+
+## b
+
+```{r}
+CTRL=mem$treatment=="Control"
+round(diag(cov(mem[CTRL,3:7])),3)
+# week2 week4 week8 week12 week16
+# 105.952 57.143 111.905 198.810 166.667
+round(diag(cov(mem[!CTRL,3:7])),3)
+
+# week2 week4 week8 week12 week16
+# 111.818 94.091 97.273 36.818 61.818
+## OR just sds^2 from above
+apply(sds^2, 2, function(x) max(x)/min(x))
+# week2 week4 week8 week12 week16
+# 1.055363 1.646591 1.150423 5.399765 2.696078
+round(abs(cor(mem[!CTRL,3:7]) - cor(mem[CTRL,3:7])) ,3)
+```
+
+
+## c
+
+```{r}
+mem1 = aov(as.matrix(mem[,3:7])~treatment, data=mem)
+anova(mem1, test="Hotelling")
+```
+
+```{r}
+anova(aov(cbind(week2,week4,week8,week12,week16)~treatment, data=mem))
+```
+
+
+
+## d
+
+```{r}
+source("http://www.stat.cmu.edu/~hseltman/files/qqn.R")
+qqn(resid(mem1), main="Monkey Memory Quantile Normal Plot")
+```
+
+# Question 2 
+
+## a
+
+```{r}
+nn = ex1605
+names(nn) = casefold(names(nn))
+{par(mfrow=c(2,2), oma=c(0,0,1.5,0))
+  
+with(nn, plot(fmed, age2iq, xlab="Foster Mother's Education",
+ylab="Child's IQ at 2 years"))
+with(nn, plot(tmiq, age2iq, xlab="Birth Mother's IQ",
+ylab="Child's IQ at 2 years"))
+with(nn, plot(fmed, age13iq, xlab="Foster Mother's Education",
+ylab="Child's IQ at 13 years"))
+
+with(nn, plot(tmiq, age13iq, xlab="Birth Mother's IQ",
+ylab="Child's IQ at 13 years"))
+mtext("Nature / Nurture EDA", outer=T, cex=1.3)}
+```
+
+## b
+
+```{r}
+library(car)
+idata = data.frame(time = ordered(1:4, labels=paste("age",c(2,4,8,13),sep="")))
+rslt = Manova(lm(cbind(age2iq,age4iq,age8iq,age13iq)~fmed+tmiq,nn),
+idata=idata, idesign=~time)
+print(rslt)
+```
+
+```{r}
+anova(aov(cbind(age2iq,age4iq,age8iq,age13iq)~fmed+tmiq,nn))
+```
+
+## c
+
+
+# Question 3
+
+
+```{r}
+library(readr)
+fakebeet <- read_csv("E:/NMT MS/Spring 22/MATH 588/Home_Work/Spring-2022---MATH-588-01-Advanced-Data-Analysis/HW6/fakebeet.csv")
+with(fakebeet, t.test(P[species=="one"], P[species=="two"]))
+
+with(fakebeet, t.test(Q[species=="one"], Q[species=="two"]))
+
+anova(aov(cbind(P,Q)~species, data=fakebeet), test="Hotelling")
+```
+
