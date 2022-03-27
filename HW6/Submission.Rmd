@@ -2,7 +2,7 @@
 title: "MATH 588"
 subtitle: "HW6"
 author: "Md Ismail Hossain"
-date: "3/26/2022"
+date: "3/27/2022"
 output: pdf_document
 ---
 
@@ -67,19 +67,14 @@ rect(13.8, 49.5, 15.8, 53.6)}
 ```{r}
 CTRL=mem$treatment=="Control"
 round(diag(cov(mem[CTRL,3:7])),3)
-# week2 week4 week8 week12 week16
-# 105.952 57.143 111.905 198.810 166.667
 round(diag(cov(mem[!CTRL,3:7])),3)
 
-# week2 week4 week8 week12 week16
-# 111.818 94.091 97.273 36.818 61.818
 ## OR just sds^2 from above
 apply(sds^2, 2, function(x) max(x)/min(x))
-# week2 week4 week8 week12 week16
-# 1.055363 1.646591 1.150423 5.399765 2.696078
+
 round(abs(cor(mem[!CTRL,3:7]) - cor(mem[CTRL,3:7])) ,3)
 ```
-
+Week 12 has a highest variance between controls and treated group which is $5.39$ times higher for controls.The highest correlation values  between pairs week 4 and 16 and it is $0.844$. (between control and treated group)
 
 ## c
 
@@ -87,12 +82,14 @@ round(abs(cor(mem[!CTRL,3:7]) - cor(mem[CTRL,3:7])) ,3)
 mem1 = aov(as.matrix(mem[,3:7])~treatment, data=mem)
 anova(mem1, test="Hotelling")
 ```
+ 
 
 ```{r}
 anova(aov(cbind(week2,week4,week8,week12,week16)~treatment, data=mem))
 ```
 
 
+The p-value is less than 0.05. So, the null hypothesis (means are equal) can be rejected at 5\% level of significance.
 
 ## d
 
@@ -100,6 +97,7 @@ anova(aov(cbind(week2,week4,week8,week12,week16)~treatment, data=mem))
 source("http://www.stat.cmu.edu/~hseltman/files/qqn.R")
 qqn(resid(mem1), main="Monkey Memory Quantile Normal Plot")
 ```
+The plot suggest, the normality assumption does not violated in this case. 
 
 # Question 2 
 
@@ -136,8 +134,15 @@ print(rslt)
 anova(aov(cbind(age2iq,age4iq,age8iq,age13iq)~fmed+tmiq,nn))
 ```
 
+
+
+In the model we observed that the p-value for variable time "time" is less than 0.05. As a result we can interpret that at 5\% level of significance we can reject the null hypothesis (average IQ similar over the time) considering all other factors are constant. 
+
+
 ## c
 
+The null hypothesis that the "IQs do not change with the birth mothers
+IQ" can be rejected at 5\% level of significance because the p-value is less than 0.05. We observed a positive correlation between mother's age and age 13 group, but other plots are not very clear to make a statement. 
 
 # Question 3
 
@@ -150,5 +155,68 @@ with(fakebeet, t.test(P[species=="one"], P[species=="two"]))
 with(fakebeet, t.test(Q[species=="one"], Q[species=="two"]))
 
 anova(aov(cbind(P,Q)~species, data=fakebeet), test="Hotelling")
+```
+
+The individual t-test are presenting a p-value of greater than 0.05, which interpreting that the null hypothesis can not be rejected. But the multivariate T square p-value is less than 0.05. So, it's suggest that we can reject the null hypothesis that individual species are equal. That's why multivariate t-test is important to consider. 
+
+
+# Question 4
+
+```{r}
+library(readr)
+swiss1 <- read_table2("E:/NMT MS/Spring 22/MATH 588/Home_Work/Spring-2022---MATH-588-01-Advanced-Data-Analysis/HW6/swiss1.txt")
+
+
+genuine <-  swiss1[1:100,2:7]
+genuine$Type <- rep("Genuine",100)
+counterfeit  <-  swiss1[101:200,2:7]
+counterfeit$Type <- rep("Counterfeit",100)
+dat <- rbind(genuine,counterfeit)
+```
+
+
+```{r}
+mod <- manova(cbind(Length,Left,Right,Bottom,Top,Diagonal) ~ Type, data=dat)
+```
+
+
+```{r}
+summary(mod)
+```
+
+
+We can reject the null hypothesis at 5\% level of significance because the p-value is less than $0.05$. 
+
+```{r}
+
+ci_ellip_plt <- function(var){
+  
+  library(car)
+  #var = "Length"
+  x = dat[dat$Type == "Genuine",var]
+  y = dat[dat$Type == "Counterfeit",var]
+  cid = data.frame(x,y)
+  
+  colnames(cid) <- c(paste(var,"Genuine"),paste(var,"Counterfeit"))
+  
+  
+  n=100
+  p=2
+  
+  Sd=cov(cid)
+  dbar=c(colMeans(cid))
+  
+  # Plot the 95% confidence ellipse for the vector of mean differences
+  library(ellipse)
+  plot(ellipse(Sd,centre=dbar,t=sqrt(((n-1)*p/(n*(n-p)))*qf(0.95,p,n-p))),type="l",main = paste("95% CI Ellipsoid for",var))
+  
+}
+par(mfrow=c(3,2))
+ci_ellip_plt(var = "Length")
+ci_ellip_plt(var = "Left")
+ci_ellip_plt(var = "Right")
+ci_ellip_plt(var = "Bottom")
+ci_ellip_plt(var = "Top")
+ci_ellip_plt(var = "Diagonal")
 ```
 
