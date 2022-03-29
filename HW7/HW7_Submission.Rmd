@@ -1,0 +1,97 @@
+---
+title: "MATH 588"
+subtitle: "HW7"
+author: "Md Ismail Hossain"
+date: "3/29/2022"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+```
+
+\newpage
+
+# Question 1 
+
+## a
+
+```{r}
+library(Sleuth3)
+fat = ex1708
+dim(fat)
+```
+
+There are 12 data points with 14 variables. So, number of variables is greater than number of observation, as a result we can not run the regression model.
+
+
+## b
+
+```{r}
+names(fat) = casefold(names(fat))
+
+aic1 = rep(NA,13)
+for (i in 1:13){
+  aic1[i] = AIC(lm(fat$fat~fat[,i+1])) 
+} 
+one = which.min(aic1) 
+cat("AIC with m", one, " = ", aic1[one], "\n", sep="")
+
+
+
+aic2 = rep(NA,13) 
+for (i in (1:13)[-one]){
+  aic2[i] = AIC(lm(fat$fat~fat[,one+1]+fat[,i+1]))
+}
+two = which.min(aic2) 
+cat("+m", two, " = ", aic2[two], "\n", sep="")
+```
+
+
+```{r}
+aic3 = rep(NA,13)
+for (i in (1:13)[-c(one,two)]){
+  aic3[i]=AIC(lm(fat$fat~fat[,one+1]+fat[,two+1]+fat[,i+1]))
+} 
+
+three = which.min(aic3)
+cat("+m", three, " = ", aic3[three], "\n", sep="")
+
+aic4 = rep(NA,13)
+
+for (i in (1:13)[-c(one,two,three)]){
+  aic4[i]=AIC(lm(fat$fat~fat[,one+1]+fat[,two+1]+fat[,three+1]+fat[,i+1]))
+}
+
+four = which.min(aic4)
+cat("+m", four, " = ", aic4[four], "\n", sep="")
+```
+
+
+```{r}
+summary(lm(fat~m8+m4+m2, fat))
+```
+
+
+## c
+
+```{r}
+x = prcomp(fat[,-1])
+cumsum( round( 100 * x$sdev[1:4]^2 / sum(x$sdev^2), 2) )
+round(x$rotation[,1:4], 2)
+```
+
+## d
+
+As 2 variable is significant at b, so considering $k=2$ here,
+
+```{r}
+fat$PC1 = apply(fat[,-1],1,mean)
+fat$PC2 = 2.35*fat$m2+fat$m1-fat$m11
+summary(lm(fat~PC1+PC2, fat))
+```
+
+## e
+
+
