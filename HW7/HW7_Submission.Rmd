@@ -2,7 +2,7 @@
 title: "MATH 588"
 subtitle: "HW7"
 author: "Md Ismail Hossain"
-date: "3/29/2022"
+date: "4/10/2022"
 output: pdf_document
 ---
 
@@ -94,4 +94,108 @@ summary(lm(fat~PC1+PC2, fat))
 
 ## e
 
+Looking at the adjusted R2, the two PCs explain about the same variance
+the three original variables chosen using the backward step wise procedure. So, two principal components are good enough to do the prediction. 
 
+# Question 2
+
+## a 
+
+```{r}
+ins = ex1716
+names(ins) = casefold(names(ins))
+head(ins)
+```
+
+
+```{r}
+set1 = c("fire","theft","age","income","race")
+set2 = c("vol","invol")
+CCAins = cancor(ins[,set1], ins[,set2])
+names(CCAins)
+
+library(CCP)
+p.asym(CCAins$cor, nrow(ins), 5, 2)
+```
+## b
+
+```{r}
+CCX1 = as.matrix(ins[,set1]) %*% as.matrix(CCAins$xcoef[,1])
+CCX2 = as.matrix(ins[,set1]) %*% as.matrix(CCAins$xcoef[,2])
+pairs(cbind(CCX1, CCX2, ins[,set1]))
+```
+
+Describe the canonical variables in terms of "vol" and "invol" characteristics associated with extreme ends of the scale:
+
+The first canonical correlation variable for set 1 contrasts zip codes with older,
+higher fraction of minority residents with lower income that have high rates
+of fire and theft with zipcodes that have younger, lower fraction of minority
+resident with higher incomes and low rates of fire and theft, with emphasis
+on income (high value is higher income). 
+
+The second CC variable seems to contrast high fire and low theft with low fire and high theft (high value is more theft than fire).
+
+
+## c
+
+
+```{r}
+CCY1 = as.matrix(ins[,set2]) %*% as.matrix(CCAins$ycoef[,1])
+CCY2 = as.matrix(ins[,set2]) %*% as.matrix(CCAins$ycoef[,2])
+```
+
+
+```{r}
+pairs(cbind(CCY1, CCY2, ins[,set2]))
+```
+The first canonical correlation variable for set 2 contrasts zip codes with high
+voluntary insurance rates with low voluntary insurance rates (high value is
+more voluntary), while the second CC variable reflect just the mean insurance
+rate for both types (high value is low for both voluntary and involuntary).
+
+## d
+
+These exercises provide small insight into the second canonical variable from Set1. To see that this variable has some spatial consistency,categorize zip codes into quartiles based on this variable and color the zip codes in a reproduction of the map in Display 17.23. Repeat the color coding for the quartiles of the first canonical variable from Set1 to show its spatial pattern. 
+ 
+ 
+```{r}
+ins$CCX1 = CCX1
+ins$CCX2 = CCX2
+
+
+library(sf)
+library(ggplot2)
+
+chi_map <- read_sf("https://raw.githubusercontent.com/thisisdaryn/data/master/geo/chicago/Comm_Areas.geojson") 
+
+map_ins <- ins[,c("zip","CCX1","CCX2")]
+ins_map2 <- merge(chi_map,map_ins, by.y = "zip", by.x = "area_numbe")
+
+
+
+
+{ggplot(data = ins_map2, aes(fill = CCX2)) +
+  geom_sf() + 
+  scale_fill_continuous() + 
+  ggtitle("Examine CC variable X2 geographically")}
+
+
+
+
+{ggplot(data = ins_map2, aes(fill = CCX1)) +
+  geom_sf() + 
+  scale_fill_continuous() + 
+  ggtitle("Examine CC variable X1 geographically")}
+```
+Both variable are showing strong geographical correlation!
+
+## e
+
+```{r}
+p.asym(CCAins$cor, nrow(ins), 5, 2)
+```
+
+
+According to the p-value from the test we found that the first pair of canonical variable is highly significant because the p-value is very low (very close to zero, 0.000000), which indicates a correlation of zipcodes with more poor, minority, low income residents and higher fire and theft rates with a relactive preponderance of involuntary (FAIR) insurance policies relative to voluntary policies. But the we can not that sure about the second pair of canonical variables because the p-value is relatively higher (0.0014) than the first one. 
+
+This is harder to understand the pattern of the insurance rate, but the suggestion is that the lowest overall insurance rates are central and in the northwest.
