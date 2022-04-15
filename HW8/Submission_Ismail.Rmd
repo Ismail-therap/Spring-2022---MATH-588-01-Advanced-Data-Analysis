@@ -1,0 +1,98 @@
+---
+title: "MATH 588"
+subtitle: "HW8"
+author: "Md Ismail Hossain"
+date: "4/15/2022"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+```
+
+\newpage
+
+# Question 1 
+
+
+
+```{r}
+library(Sleuth3)
+lymph = ex1914
+names(lymph) = casefold(names(lymph))
+
+lymphA = array(t(cbind(lymph$survive,lymph$died)),
+dim=c(2,2,17),
+dimnames = list(
+outcome=c("survived","died"),
+group=c("radiation","no"),
+months=lymph$months[seq(1,by=2,length=17)]))
+lymphA = aperm(lymphA,c(2,1,3))
+```
+
+
+```{r}
+woolf <- function(x) {
+x <- x + 1 / 2
+k <- dim(x)[3]
+or <- apply(x, 3, function(x) (x[1,1]*x[2,2])/(x[1,2]*x[2,1]))
+w <- apply(x, 3, function(x) 1 / sum(1 / x))
+1 - pchisq(sum(w * (log(or) - weighted.mean(log(or), w)) ^ 2), k - 1)
+}
+woolf(lymphA)
+```
+
+```{r}
+mantelhaen.test(lymphA)
+
+```
+
+
+# Question 2
+
+```{r}
+trout = ex2116
+names(trout)=casefold(names(trout))
+trout$noTumor = trout$total - trout$tumor
+trout$invDose = 1/trout$dose
+trlr = glm(cbind(tumor,noTumor)~invDose, trout, family="binomial")
+```
+
+```{r}
+qtr=glm(cbind(tumor,noTumor)~invDose, trout, family="quasibinomial")
+```
+
+```{r}
+1 - pchisq(summary(qtr)$dispersion * trlr$df.residual, trlr$df.residual)
+```
+
+
+```{r}
+summary(qtr)
+```
+
+
+
+
+# Question 3
+
+```{r}
+mate = case2201
+names(mate)=casefold(names(mate))
+m1 = glm(matings ~ age, mate, family="poisson")
+qm1 = glm(matings ~ age, mate, family="quasipoisson")
+1 - pchisq(summary(qm1)$dispersion * m1$df.residual, m1$df.residual)
+```
+
+
+
+```{r}
+plot(m1)
+```
+
+
+
+
+
+
