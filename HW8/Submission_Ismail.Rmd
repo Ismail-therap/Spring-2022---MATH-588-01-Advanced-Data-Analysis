@@ -2,7 +2,7 @@
 title: "MATH 588"
 subtitle: "HW8"
 author: "Md Ismail Hossain"
-date: "4/15/2022"
+date: "4/18/2022"
 output: pdf_document
 ---
 
@@ -43,11 +43,15 @@ w <- apply(x, 3, function(x) 1 / sum(1 / x))
 woolf(lymphA)
 ```
 
+The p-value is greater than 0.05 and the null hypothesis is odds ratios are equal. So, we can reject the null hypothesis and proceed to Mantel-Haenszel test.
+
+
 ```{r}
 mantelhaen.test(lymphA)
 
 ```
 
+The calculated p-value is 0.12,so the null hypothesis cannot be rejected. So, there is no evidence that the survival curves differ for those with and without radiation. At each month the odds of surviving for those in the radiation group is 0.18 to 1.10 times the odds of surviving in the no radiation group.
 
 # Question 2
 
@@ -56,6 +60,49 @@ trout = ex2116
 names(trout)=casefold(names(trout))
 trout$noTumor = trout$total - trout$tumor
 trout$invDose = 1/trout$dose
+```
+
+```{r}
+par(mfrow=c(2,2))
+
+{plot(trout$dose,log(trout$tumor/trout$noTumor))
+  #fit a linear regression model to the data
+reg_model <- glm(log(trout$tumor/trout$noTumor) ~ dose, data = trout)
+
+#add the fitted regression line to the scatterplot
+abline(reg_model)}
+
+
+{plot(log(trout$dose),log(trout$tumor/trout$noTumor))
+  #fit a linear regression model to the data
+reg_model <- glm(log(trout$tumor/trout$noTumor) ~ log(dose), data = trout)
+
+#add the fitted regression line to the scatterplot
+abline(reg_model)}
+
+
+#par(mfrow=c(1,2))
+
+{plot(sqrt(trout$dose),log(trout$tumor/trout$noTumor))
+  #fit a linear regression model to the data
+reg_model <- glm(log(trout$tumor/trout$noTumor) ~ sqrt(dose), data = trout)
+
+#add the fitted regression line to the scatterplot
+abline(reg_model)}
+
+{plot((1/trout$dose),log(trout$tumor/trout$noTumor))
+  #fit a linear regression model to the data
+reg_model <- glm(log(tumor/noTumor) ~ (1/trout$dose), data = trout)
+
+#add the fitted regression line to the scatterplot
+abline(reg_model)}
+
+```
+
+
+
+
+```{r}
 trlr = glm(cbind(tumor,noTumor)~invDose, trout, family="binomial")
 ```
 
@@ -68,12 +115,22 @@ qtr=glm(cbind(tumor,noTumor)~invDose, trout, family="quasibinomial")
 ```
 
 
+
 ```{r}
 summary(qtr)
+
 ```
 
+```{r}
+exp(qtr$coef[2])
 
+# Optional CI:
+tmp = summary(qtr)$coef[2,]
+round(exp(tmp[1]+c(-1,1)*1.96*tmp[2]), 3)
+```
 
+As the inverse of the dose goes up by one unit, the odds of having a tumor drop by
+4.6\% (95\% CI=[3.8,5.3]), i.e., they are multiplied by 0.954.
 
 # Question 3
 
@@ -87,12 +144,17 @@ qm1 = glm(matings ~ age, mate, family="quasipoisson")
 
 
 
+
 ```{r}
-plot(m1)
+summary(m1)
+exp(m1$coef[2])
 ```
 
 
+The odds of mating is higher by around 7\% for the one year older elephants according to the study.
 
-
+```{r}
+plot(m1, which=c(1,1))
+```
 
 
