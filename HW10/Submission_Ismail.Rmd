@@ -1,0 +1,282 @@
+---
+title: "MATH 588"
+subtitle: "HW9"
+author: "Md Ismail Hossain"
+date: "4/23/2022"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+```
+
+\newpage
+
+# Exercise 20.11
+
+```{r}
+library(Sleuth3)
+head(ex2011)
+
+```
+## a
+
+```{r}
+lm1_1 <- glm (as.factor(Failure) ~ Temperature, data = ex2011, family = binomial)
+summary (lm1_1)
+
+```
+
+The fit of a logistic Regression model to the space shuttle data, where pi represents survival probability, gives
+$$logit(\hat\pi) = -10.87535 + 0.17132(Temperature)$$  with intercept standard error is $5.70291$ and slope standard error is $0.08344$.
+
+
+## b
+
+$H_0$: coefficient of Temperature ($\beta_1$)  $=$ 0 \
+$H_a$: coefficient of Temperature ($\beta_1$) $\neq$ 0\
+
+The Wald statistic (z - value) for the Temperature is $2.053$ and the correspondent two sided p-value is $0.04$ which is smaller than the critical value. We can reject the H0 at $5\%$ level of significance and conclude that there is strong evidence of an association between Temperature and the incidence of O-ring failure.\
+
+
+Consider the coefficient is negative then the hypothesis can be expressed as:\
+
+$H_0$: coefficient of Temperature ($\beta_1$)  $<$ 0 \
+$H_a$: coefficient of Temperature ($\beta_1$) $\geq$ 0 \
+
+
+The Wald statistic for Temperature is 2.053 and the one sided p-value is 0.02, which is less than 0.05. So, at 5\% level of significance we can reject the $H_0$. So, we can conclude that there is association between Temperature and the incidence of O-ring failure.
+
+## c
+
+```{r}
+lm1_2 <- update(lm1_1, ~ . -Temperature)
+summary(lm1_2)
+```
+
+Here, in the model with the Temperature the deviance is 23.030 and without Temperature the deviance is
+28.975. So, drop in deviance is $(28.975-23.030) = 5.945$ with the drop in degrees of freedom $23 - 22 = 1$.
+The drop in deviance follows a $\chi^2$ distribution with the drop in degrees of freedom so at 5\% level of significance.
+
+
+```{r}
+pchisq (5.945, 1, lower.tail = F)
+```
+
+So, we can conclude that Temperature have a significant impact because the p-value of the test is very small.
+
+
+## d
+
+```{r}
+exp(confint.lm(lm1_1))
+```
+ The 95\% confidence interval for Temperature is $[0.07086726, 1.001722]$.
+
+
+## e
+
+From the above output, the estimated logit of failure probability at $31^0$ F  (the launch temperature on
+January 28,1996 is given by,
+
+$$logit(\pi_1) = -10.87535 + 0.17132*(31) = -5.56443$$
+
+The estimate failure probability is:
+
+$$ \pi_1 =  \frac{e^-5.56443}{1+e^-5.56443} = 0.003817$$
+## f
+
+As the prediction outside the range of the independent variables values, so we have to be more cautious in estimating. 
+
+
+# Exercise 20.12
+
+## a
+
+```{r}
+library(lattice)
+xyplot(log(CK)~H, data=ex2012, groups=Group, auto.key=list(corner=c(1,1)))
+```
+
+
+```{r}
+xyplot(log(CK)~H|Group, data=ex2012)
+```
+We couldn't see any relationship between log of creatine kinase and hemopexin for case and control group. But mascular dystropy carriers have hemopexin values more than around 75.
+
+## b
+
+```{r}
+lm2_1 <- glm (as.factor(Group) ~ CK + I(CK^2) , data = ex2012, family = binomial)
+summary(lm2_1)
+```
+
+The quadratic term of CK of the model doesn't seems statistically significant at 5\% level of significance.
+
+```{r}
+lm2_2 <- glm (as.factor(Group) ~ log(CK) + I((log(CK))^2) , data = ex2012, family = binomial)
+summary(lm2_2)
+```
+
+In this model none of the CK variables are statitically significant at 5\% level of significance.
+
+
+## c
+
+```{r}
+lm2_3 <- glm (as.factor(Group) ~ log(CK) + H, data = ex2012, family = binomial)
+summary (lm2_3)
+```
+
+When we are using H in the model then both the coefficient of H and log(CK) becomes statistically significant at 5\% level of significance.
+
+## d
+
+```{r}
+lm2_4 <- update(lm2_3, ~ . - log(CK) - H)
+summary(lm2_4)
+```
+
+
+Here in the model, with the log(CK) and H the deviance is $61.992$ and deviance without these two predictors is
+$149.84$. So, the drop in deviance is $(149.84-61.992) = 87.848$ with the drop in degrees of freedom $119-117 = 2$.
+The drop in deviance follows a $\chi^2$ distribution with the drop in degrees of freedom so at 5\% level of significance.
+
+```{r}
+pchisq (87.848, 2, lower.tail = F)
+```
+
+log(CK) and H are useful predictors according to the p-value we go from the test.
+
+
+
+## e
+
+Odds of a suspected carrier with the values CK = 300 and H = 100 is -7.67 and the odds of suspected carrier with the values CK = 80 and H = 85 is -0.308. The odds ratio value is 25.1948 which indicates that the odds of a suspected carrier with CK and H values of 300 and 100 respectively is almost 25 times more than odds of a suspected carrier with the typical values
+(CK = 80 and H = 85).
+
+
+# Exercise 21.10
+
+
+```{r}
+ex2110 = case1902
+```
+
+## a
+```{r}
+ex2110$y <- with(ex2110, Death/(Death + NoDeath))
+ex2110$logit <- with (ex2110, log((y+0.5)/(Death+NoDeath-y+0.5)))
+xyplot(logit ~ Aggravation, data=ex2110, groups=Victim, auto.key=list(bottom=c(1,1)))
+```
+
+
+```{r}
+xyplot (logit ~ Aggravation | Victim, data = ex2110)
+```
+
+## b
+
+```{r}
+ex2110$prop <- with (ex2110, Death/(Death+NoDeath))
+ind_vic <- with (ex2110, ifelse(Victim=="White",1,0))
+binResponse <- with (ex2110, cbind(Death, NoDeath))
+lm3_1 <- glm (binResponse ~ Aggravation + ind_vic, data = ex2110, family = binomial)
+summary (lm3_1)
+```
+
+## c
+
+```{r}
+pchisq(lm3_1$deviance, df=lm3_1$df.residual, lower.tail=FALSE)
+```
+
+The null hypothesis is that our model is correctly specified, and we have strong evidence to support the null
+hypothesis since the p value is larger than the critical value at 5% level of significance. So we have strong
+evidence that our model fitted well.
+
+## d
+For $\beta_2$: From the above output we can say that, the Wald statistic (z - value) for the Dose is 3.377 and the
+correspondent two sided p-value is 0.000732 which is smaller than the critical value. We can reject the H0 at
+5\% level of significance and conclude that $\beta_2$ not equal to 0.
+
+## e
+
+```{r}
+confint.lm(lm3_1)
+```
+
+```{r}
+exp(confint.lm(lm3_1)[3,1:2])
+
+```
+
+95\% confidence interval for the odds of death sentence for white-victim murderers relative to
+the black-victim murderers, accounting for aggravation level of the crime is 1.818 to 20.652.
+
+# Exercise 21.13
+
+## a
+
+```{r}
+ex2113$logit_p <- log(ex2113$ProportionWithout/(1-ex2113$ProportionWithout))
+with (ex2113, plot(logit_p, Dose), main = "Scatterplot of logit (p) with Dose")
+```
+
+## b
+
+```{r}
+binResponse <- with (ex2113, cbind(WithoutIllness, Number - WithoutIllness))
+lm4_1 <- glm (binResponse ~ Dose, data = ex2113, family = binomial)
+summary (lm4_1)
+```
+
+The fit of a logistic regression model to the Vitamin C data, where $\pi$ represents the proportion of the without
+illness gives,
+$$logit(\hat \pi) = -1.20031 - 0.03465*(Dose)$$
+
+with intercept standard error is $0.06167$ and slope (Dose) standard error is $0.07113$.
+
+$H_0$ : The model fits the data well\
+$H_a$ : The model does not fit the data well\
+
+To deviance here is labelled as the ‘residual deviance’ by the glm function, and here is 0.52957. There are 4
+observations, and our model has two parameters, so the degrees of freedom is 2, given by R as the residual df.
+To calculate the p-value for the deviance goodness of fit test we simply calculate the probability to the right
+of the deviance value for the chi-squared distribution on 2 degrees of freedom:
+
+```{r}
+pchisq(lm4_1$deviance, df=lm4_1$df.residual, lower.tail=FALSE)
+```
+
+The null hypothesis is that our model is correctly specified, and we have strong evidence to support the null
+hypothesis since the p-value is larger than the critical value at 5\% level of significance. So we have strong
+evidence that our model fitted well.
+
+## c
+
+Here is the hypothesis to test that the $\beta_1$ is 0,
+$H_0$: coefficient of Dose ($\beta_1$) = 0\
+$H_a$: coefficient of Dose ($\beta_1$) $\neq$ 0\
+
+The calculated p-value for Wald statistic is 0.487 which is greater than 0.05. As a result we can not reject the null hypothesis.
+
+```{r}
+lm4_2 <- update (lm4_1, ~ . - Dose)
+summary (lm4_2)
+```
+
+
+$H_0$: coefficient of Dose ($\beta_1$) = 0\
+$H_a$: coefficient of Dose ($\beta_1$) $\neq$ 0\
+
+Drop in the deviance is $(0.76803 - 0.52957) = 0.23846$ and drop in df is 1. 
+
+```{r}
+pchisq(lm4_1$deviance, df=lm4_1$df.residual, lower.tail=FALSE)
+```
+
+The p-value is greater than 0.05. So, at 5\% level of significance and conclude that there
+no evidence of association between Dose and the log of the proportion of without illness which contradicts
+the previous result got from the Wald test.

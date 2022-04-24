@@ -1,0 +1,70 @@
+---
+title: "MATH 588"
+subtitle: "HW9"
+author: "Md Ismail Hossain"
+date: "4/23/2022"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+```
+
+\newpage
+
+# Question 1 
+
+
+```{r}
+library(Sleuth3)
+head(ex2115)
+attach(ex2115)
+```
+
+## a
+
+```{r}
+ex2115$prop <- PercentInFavor/100
+binResponse <- cbind(InFavor, NotInFavor)
+glm1_1 <- glm (binResponse ~ as.factor(Level), data = ex2115, family = binomial)
+summary (glm1_1)
+```
+
+The p-value for Level is not significant at 5\% level of significance. So , we can conclude that proportion of favorable response to the target question does not depend on the wording (LEVEL) of the question.
+
+## b
+
+```{r}
+glm1_2 <- glm (binResponse ~ as.factor(Context), data = ex2115, family = binomial)
+summary (glm1_2)
+
+```
+
+Here, the p-value for both the intercept and factor variable are statistically significant because the p-value is less than 0.05. The odds of beta 1 is 0.519. So, the odds of the context question preceding the target question about U.S. aid to the Nicaraguan Contra rebels of Cuba is almost 2 times than the Vietnam.
+
+
+## c
+
+```{r}
+ind_mode <- ifelse (Mode == "scattered", 1, 0)
+ind_context <- ifelse (Context == "Vietnam", 1, 0)
+glm1_3 <- glm (binResponse ~ ind_context + ind_mode, data = ex2115, family = binomial)
+summary (glm1_3)
+```
+
+Here, the two-sided p-value for the \β1 and \β2 are $6.75e-0$ and $0.00388$ respectively which are significant at
+5\% level of significance. SO, we can conclude that the proportion depend on the context question to different
+extents according to whether the target and context questions are scattered.
+
+
+# 
+
+```{r}
+attach (ex2116)
+prop_tumor <- Tumor / Total
+odds_tumor <- prop_tumor / (1 - prop_tumor)
+odds_tumor
+```
+
+
