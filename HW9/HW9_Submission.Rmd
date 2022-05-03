@@ -1,8 +1,8 @@
 ---
 title: "MATH 588"
-subtitle: "HW9"
+subtitle: "HW10"
 author: "Md Ismail Hossain"
-date: "4/23/2022"
+date: "4/27/2022"
 output: pdf_document
 ---
 
@@ -53,7 +53,7 @@ glm1_3 <- glm (binResponse ~ ind_context + ind_mode, data = ex2115, family = bin
 summary (glm1_3)
 ```
 
-Here, the two-sided p-value for the \β1 and \β2 are $6.75e-0$ and $0.00388$ respectively which are significant at
+Here, the two-sided p-value for the $\beta_1$ and $\beta_2$ are $6.75e-0$ and $0.00388$ respectively which are significant at
 5\% level of significance. SO, we can conclude that the proportion depend on the context question to different
 extents according to whether the target and context questions are scattered.
 
@@ -67,4 +67,135 @@ odds_tumor <- prop_tumor / (1 - prop_tumor)
 odds_tumor
 ```
 
+# Exercise 21.16
+
+```{r}
+head (ex2116)
+attach (ex2116)
+prop_tumor <- Tumor / Total
+odds_tumor <- prop_tumor / (1 - prop_tumor)
+odds_tumor
+```
+
+
+```{r}
+require(lattice)
+xyplot (Dose ~ odds_tumor, data = ex2116)
+```
+
+
+```{r}
+binResponse <- cbind (Tumor, Total-Tumor)
+glm2_1 <- glm (binResponse ~ Dose, data=ex2116, family = binomial)
+summary (glm2_1)
+```
+
+
+
+```{r}
+ex2116$cum_rel_tumor <- cumsum(Tumor)/sum(Tumor)
+ex2116$cum_rel_tumor
+```
+
+
+Here, the p-value is less than 0.05. So, we can conclude that there are strong relationship between dose of A flatoxicol and odds of liver tumor. From the above output we can see that at dose 0.10, 50\% of the fish will get liver tumors.
+
+# Exercise 22.15
+
+```{r}
+ex2215 = case2201
+attach(ex2215)
+
+```
+
+## a
+
+
+```{r}
+lm3_1 <- lm (sqrt(Matings) ~ Age)
+summary (lm3_1)
+```
+The fitted simple linear regression model for the square root of the matings is given by,
+
+$$ \hat y_i = -0.81220 + 0.06320(Age)$$
+
+with $SE(\beta_0) = 0.56867$ and $SE(\beta_1) = 0.01561$
+
+## b
+
+```{r}
+lm3_2 <- lm (log(Matings+1) ~ Age)
+summary (lm3_2)
+```
+
+The fitted simple linear regression model for the logarithamic transformation of the matings(after adding 1)
+is given by,
+
+$$ log(\hat y_i) = -0.69893 + 0.05093(Age)$$
+with $SE(\beta_0) = 0.45861$ and $SE(\beta_1) = 0.01259$
+
+
+## c
+
+```{r}
+glm3_3 <- glm (Matings ~ Age, family = poisson)
+summary (glm3_3)
+```
+
+With a count response matings and a explanatory variable age, the Poisson log-linear regression model is
+given by,
+
+$$ log(\hat \mu) = -1.58201 + 0.06869(Age)$$
+
+with $SE(\beta_0) = 0.54462$ and $SE(\beta_1) = 0.01375$
+
+## d
+
+```{r}
+par(mfrow = c(1, 2))
+plot (lm3_1, 1)
+plot (lm3_1, 2)
+```
+
+The residual plot will show no fitted pattern. That is, the red line should be approximately horizontal
+at zero. But in that case of model fitted in (a), the red line is not horizontal at 0. In case of the normal
+probability plot of residuals should approximately follow a straight line which indicate the model is adequate
+but in our case for the model fitted in (a) doesn’t show the straight line rather showing some outliers at case
+no 32, and 36. So from both the plot we can assume that the fitted model in (a) exhibit obvious inadequacy.
+
+```{r}
+par(mfrow = c(1, 2))
+plot (lm3_2, 1)
+plot (lm3_2, 2)
+```
+
+The fitted plot seems perfect to me.
+
+# Exercise 22.22
+
+```{r}
+attach (ex2222)
+glm5_1 <- glm (Count ~ Book + Word, family = poisson)
+summary (glm5_1)
+```
+For this model, the p-value for the coefficients are less than the critical value (0.05) at 5\% level of significance which
+indicates that Jane Austen was consistent in the three books in her relative uses of these words.
+
+```{r}
+ind_sandII <- ifelse (Book == "SanditonII", 1, 0)
+glm5_2 <- glm (Count ~ ind_sandII + Word, family = poisson)
+summary (glm5_2)
+```
+The emulator do a great job in terms of matching the relative rates of occurrence of these six words since the two-sided p-value is smaller than the critical value (0.05) at 5\% level of significance.
+
+
+```{r}
+ind_sandI <- ifelse (Book == "SanditonI", 1, 0)
+glm5_3 <- glm (Count ~ ind_sandI + ind_sandII + Word, family = poisson)
+summary (glm5_3)
+```
+
+From the above output we can conclude that, the emulator match the relative rates that Austen used the
+words in the first part of Sanditon since the two-sided p-value is smaller than the critical value (0.05) at 5\%
+level of significance.
 
