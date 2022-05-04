@@ -1,0 +1,162 @@
+---
+title: "MATH 588"
+subtitle: "Final Exam"
+author: "Md Ismail Hossain"
+date: "5/03/2022"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+```
+
+\newpage
+
+# Question 1
+
+## a
+```{r}
+library(Sleuth3)
+library(readr)
+
+fullBumpus <- read_table2("E:/NMT MS/Spring 22/MATH 588/Home_Work/Spring-2022---MATH-588-01-Advanced-Data-Analysis/Take_Home_Exam/fullBumpus.txt")
+
+## 1 (a)
+
+ttst1 = t.test(Weight~Survive,var.equal=TRUE,data = fullBumpus)
+ttst1
+```
+
+
+```{r}
+ttst2 = t.test(Weight~Survive,var.equal=FALSE,data = fullBumpus)
+ttst2
+```
+
+## b
+
+```{r}
+fit <- lm(Weight~Survive,data = fullBumpus)
+plot(fit,2)
+```
+
+## c
+
+```{r}
+boxplot(Weight~Survive,data=fullBumpus)
+
+#Showing IQR
+aggregate(Weight~Survive,fullBumpus,IQR)
+```
+
+
+# Question 3
+
+## a
+
+```{r}
+head(ex2220)
+ex2220$Exposer_sq <- ex2220$Exposure^2
+m1 <- glm(Deaths ~ log(AtRisk)+factor(YearsAfter)+Exposure+Exposer_sq , family="poisson", data=ex2220)
+summary(m1)
+```
+
+
+## b
+
+```{r}
+head(ex2220,20)
+
+ex2220$Time <- ifelse(ex2220$YearsAfter ==  "0to7",3.5,
+                      ifelse(ex2220$YearsAfter == "8to11",9.5,
+                             ifelse(ex2220$YearsAfter == "12to15",13.5,
+                                    ifelse(ex2220$YearsAfter == "16to19",17.5,
+                                           ifelse(ex2220$YearsAfter == "20to23",21.5,
+                                                  ifelse(ex2220$YearsAfter == "24to27",25.5,
+                                                         ifelse(ex2220$YearsAfter == "28to31",29.5,NA
+                                                                )))))))
+
+m2 <- glm(Deaths ~ log(AtRisk)+log(Time)+Exposure+Exposer_sq , family="poisson", data=ex2220)
+
+summary(m2)
+
+
+```
+
+## c
+
+```{r}
+m3 <- glm(Deaths ~ log(AtRisk)+log(Time)+log(Time)*Exposure+Exposure+Exposer_sq , family="poisson", data=ex2220)
+summary(m3)
+```
+
+## d
+
+
+```{r}
+with(m1, cbind(res.deviance = deviance, df = df.residual,
+  p = pchisq(deviance, df.residual, lower.tail=FALSE)))
+```
+
+
+```{r}
+with(m2, cbind(res.deviance = deviance, df = df.residual,
+  p = pchisq(deviance, df.residual, lower.tail=FALSE)))
+```
+
+```{r}
+with(m3, cbind(res.deviance = deviance, df = df.residual,
+  p = pchisq(deviance, df.residual, lower.tail=FALSE)))
+```
+
+```{r}
+require(MASS)
+exp(confint(m1))
+```
+
+
+# Question 4
+
+## a
+
+```{r}
+Dose <- c(0.0794,0.1000,0.1259,0.1413,0.1500,0.1588,0.1778,0.1995,0.2239,0.2512,0.2818,0.3162)
+Group <- c(1:12)
+Died <- c(1,2,1,0,1,2,4,6,4,5,5,8)
+Survived <- c(9,8,9,10,9,8,6,4,6,5,5,2)
+Total <- rep(10,12)
+
+dat4 <- data.frame(Group,Dose,Died,Survived,Total)
+dat4$Proportion <- dat4$Died/dat4$Total
+
+head(dat4)
+
+attach(dat4)
+y <- cbind(Died,Survived)
+fit1 <- glm (y ~ Dose, data = dat4, family = binomial)
+summary (fit1)
+```
+
+## b
+
+```{r}
+dat4$fitted_val <- fitted(fit1)
+
+require(lattice)
+xyplot (fitted_val~Dose, data = dat4)
+```
+
+
+
+## d
+
+```{r}
+# Goodness of fit test:
+df       <- 10
+deviance <- 10.254
+p_val    <- pchisq(deviance, df=df, lower.tail=FALSE)
+p_val
+
+```
+
